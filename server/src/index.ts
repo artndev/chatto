@@ -8,8 +8,9 @@ const staticPath = path.join(process.cwd(), '../', 'server', 'src', 'static')
 import express from 'express'
 import fs from 'fs'
 import config from '../config.json' with { type: 'json' }
+import { Server } from 'socket.io'
+import { createServer } from 'http'
 
-const app = express()
 // app.use(
 //   cors({
 //     origin: config.CLIENT_URL,
@@ -17,8 +18,15 @@ const app = express()
 //     credentials: true,
 //   })
 // )
+const app = express()
+const server = createServer(app)
 app.use(express.json())
 app.use(express.static(clientBuildPath))
+
+const io = new Server(server)
+io.on('connection', socket => {
+  console.log('user is connected: ', socket.id)
+})
 
 app.get('/api/static/:id', (req, res) => {
   const filePath = path.join(staticPath, req.params.id)
@@ -36,6 +44,6 @@ app.get('/*', (_req, res) => {
 })
 
 const port = process.env.PORT ? Number(process.env.PORT) : config.PORT
-app.listen(port, () =>
+server.listen(port, () =>
   console.log(`Server listening on port ${port}\nhttp://localhost:${port}`)
 )
