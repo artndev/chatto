@@ -25,7 +25,15 @@ app.use(express.static(clientBuildPath))
 
 const io = new Server(server)
 io.on('connection', socket => {
-  console.log('user is connected: ', socket.id)
+  console.log('User is connected: ', socket.id)
+
+  socket.on('message', msgs => {
+    console.log(`User #${socket.id} wrote: `, msgs)
+  })
+
+  socket.on('disconnect', () => {
+    console.log('User is disconnected: ', socket.id)
+  })
 })
 
 app.get('/api/static/:id', (req, res) => {
