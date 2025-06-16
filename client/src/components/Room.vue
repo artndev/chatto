@@ -33,9 +33,6 @@ const route = useRoute()
 const roomId = route.params.id as string
 let error = ref(false)
 
-if (!roomId.startsWith('r'))
-    error.value = true
-
 const formRules = {
     message: [{
         required: true,
@@ -47,5 +44,5 @@ let formState = reactive({
     message: ""
 })
 
-const onFinish = () => store.sendMessage(formState.message, roomId)
+const onFinish = () => store.message(roomId, formState.message)
 </script>

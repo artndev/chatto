@@ -1,54 +1,87 @@
 import dotenv from 'dotenv'
 dotenv.config()
 
-import path from 'path'
-const clientBuildPath = path.join(process.cwd(), '../', 'client', 'dist')
-const staticPath = path.join(process.cwd(), '../', 'server', 'src', 'static')
-
 import express from 'express'
-import fs from 'fs'
-import config from '../config.json' with { type: 'json' }
-import { Server } from 'socket.io'
 import { createServer } from 'http'
+import { Server } from 'socket.io'
+import config from '../config.json' with { type: 'json' }
+import db from './db.js'
 
-// app.use(
-//   cors({
-//     origin: config.CLIENT_URL,
-//     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-//     credentials: true,
-//   })
-// )
 const app = express()
 const server = createServer(app)
 app.use(express.json())
-app.use(express.static(clientBuildPath))
 
-const io = new Server(server)
+const io = new Server(server, {
+  cors: {
+    origin: config.CLIENT_URL,
+  },
+})
+
 io.on('connection', socket => {
   console.log('User is connected: ', socket.id)
 
-  socket.on('message', msgs => {
-    console.log(`User #${socket.id} wrote: `, msgs)
+  socket.on('user:join', username => {
+    socket.username = username
+    socket.room = 'global'
+
+    db.usernames[username] = username
+    socket.join('global')
+
+    socket.emit('user:announce', 'SERVER', "You have connected to 'global'")
+    socket.broadcast
+      .to('global')
+      .emit('user:announce', 'SERVER', `@${username} has joined this room`)
+
+    socket.emit('room:update', db.usernames, db.rooms, 'global')
+  })
+
+  // create message for sender automatically on client side
+  socket.on('user:message', data => {
+    socket.broadcast
+      .to(socket.room!)
+      .emit('message:received', socket.username, data)
+  })
+
+  socket.on('room:switch', room => {
+    socket.leave(socket.room!)
+    socket.join(room)
+
+    socket.emit('user:announce', 'SERVER', `You have connected to '${room}'`)
+    socket.broadcast
+      .to(socket.room!)
+      .emit(
+        'user:announce',
+        'SERVER',
+        `@${socket.username} has left to this room`
+      )
+
+    socket.room = room
+    socket.broadcast
+      .to(room)
+      .emit(
+        'user:announce',
+        'SERVER',
+        `@${socket.username} has joined this room`
+      )
+
+    socket.emit('room:update', db.usernames, db.rooms, room)
   })
 
   socket.on('disconnect', () => {
+    delete db.usernames[socket.username!]
+
+    io.sockets
+      .to(socket.room!)
+      .emit('room:update', db.usernames, db.rooms, null)
+
+    socket.broadcast
+      .to(socket.room!)
+      .emit('user:announce', 'SERVER', `@${socket.username} has left`)
+
+    socket.leave(socket.room!)
+
     console.log('User is disconnected: ', socket.id)
   })
-})
-
-app.get('/api/static/:id', (req, res) => {
-  const filePath = path.join(staticPath, req.params.id)
-
-  if (!fs.existsSync(filePath)) {
-    res.sendFile(path.join(staticPath, '404.jpg'))
-    return
-  }
-
-  res.sendFile(filePath)
-})
-
-app.get('/*', (_req, res) => {
-  res.sendFile(path.join(clientBuildPath, 'index.html'))
 })
 
 const port = process.env.PORT ? Number(process.env.PORT) : config.PORT
