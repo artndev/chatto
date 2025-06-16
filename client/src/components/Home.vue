@@ -1,19 +1,36 @@
 <template>
-    <div class="flex flex-column gap-[10px] max-w-[min(100%,_500px)]">
-        <a-input @update:value="onChange" placeholder="Enter your message..." />
-        <a-button class="btn" :icon="h(Send)" v-on:click="sendMessage" />
-    </div>
+    <a-form class="flex gap-[10px] max-w-[min(100%,_500px)]" :model="formState" @finish="onFinish">
+        <a-form-item class="flex-1" name="message" :rules="formRules.message">
+            <a-input v-model:value="formState.message" placeholder="Enter your message..." />
+        </a-form-item>
+
+        <a-button class="btn" html-type="submit">
+            <template #icon>
+                <Send />
+            </template>
+        </a-button>
+    </a-form>
 </template>
 
 <script setup lang="ts">
-import { h, ref } from 'vue';
 import { Send } from 'lucide-vue-next';
+import { reactive } from 'vue';
 
 import { useSocketStore } from '../store.js';
 const store = useSocketStore()
 
-let message = ref("")
-const sendMessage = () => store.addMessage(message.value)
+const formRules = {
+    message: [{
+        required: true,
+        message: 'Message cannot be empty',
+        trigger: 'blur'
+    }]
+}
+let formState = reactive({
+    message: ""
+})
 
-const onChange = (val: string) => message.value = val
+const onFinish = () => {
+    store.sendMessage(formState.message)
+}
 </script>

@@ -10,7 +10,7 @@ const socket = io()
 export const useSocketStore = defineStore('socket', () => {
   const messages = ref([] as socketStoreItem[])
 
-  const addMessage = (content: string) => {
+  const sendMessage = (content: string) => {
     messages.value = [
       ...messages.value,
       {
@@ -21,5 +21,5 @@ export const useSocketStore = defineStore('socket', () => {
     socket.emit('message', messages.value)
   }
 
-  return { messages, addMessage }
+  return { messages, sendMessage }
 })
