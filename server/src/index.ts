@@ -32,7 +32,8 @@ io.on('connection', socket => {
       .to('global')
       .emit('user:announce', 'SERVER', `@${username} has joined this room`)
 
-    socket.emit('room:update', db.usernames, db.rooms, 'global')
+    io.sockets.to('global').emit('room:update_usernames', db.usernames)
+    socket.emit('room:update_rooms', db.rooms, 'global')
   })
 
   // create message for sender automatically on client side
@@ -46,39 +47,30 @@ io.on('connection', socket => {
     socket.leave(socket.room!)
     socket.join(room)
 
-    socket.emit('user:announce', 'SERVER', `You have connected to '${room}'`)
     socket.broadcast
       .to(socket.room!)
-      .emit(
-        'user:announce',
-        'SERVER',
-        `@${socket.username} has left to this room`
-      )
+      .emit('user:announce', 'SERVER', `@${socket.username} has left`)
 
     socket.room = room
+    socket.emit('user:announce', 'SERVER', `You have connected to '${room}'`)
     socket.broadcast
       .to(room)
-      .emit(
-        'user:announce',
-        'SERVER',
-        `@${socket.username} has joined this room`
-      )
+      .emit('user:announce', 'SERVER', `@${socket.username} has joined`)
 
-    socket.emit('room:update', db.usernames, db.rooms, room)
+    io.sockets.to(room).emit('room:update_usernames', db.usernames)
+    socket.emit('room:update_rooms', db.rooms, room)
   })
 
   socket.on('disconnect', () => {
     delete db.usernames[socket.username!]
-
-    io.sockets
-      .to(socket.room!)
-      .emit('room:update', db.usernames, db.rooms, null)
+    socket.leave(socket.room!)
 
     socket.broadcast
       .to(socket.room!)
       .emit('user:announce', 'SERVER', `@${socket.username} has left`)
 
-    socket.leave(socket.room!)
+    io.sockets.to(socket.room!).emit('room:update_usernames', db.usernames)
+    socket.emit('room:update_rooms', db.rooms, null)
 
     console.log('User is disconnected: ', socket.id)
   })
