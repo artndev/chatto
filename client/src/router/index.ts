@@ -1,24 +1,20 @@
 // @ts-nocheck
-import {
-  createRouter,
-  createMemoryHistory,
-  createWebHistory,
-} from "vue-router";
-import Home from "../components/Home.vue";
-import Random from "../components/Random.vue";
+import { createRouter, createMemoryHistory, createWebHistory } from 'vue-router'
+import Home from '../components/Home.vue'
+import Room from '../components/Room.vue'
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
-      path: "/",
+      path: '/',
       component: Home,
     },
     {
-      path: "/random",
-      component: Random,
+      path: '/:id',
+      component: Room,
     },
   ],
-});
+})
 
-export default router;
+export default router

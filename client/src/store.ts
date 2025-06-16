@@ -1,25 +1,14 @@
 import { defineStore } from 'pinia'
 import { io } from 'socket.io-client'
-import { ref } from 'vue'
-
-interface socketStoreItem {
-  content: string
-}
 
 const socket = io()
 export const useSocketStore = defineStore('socket', () => {
-  const messages = ref([] as socketStoreItem[])
-
-  const sendMessage = (content: string) => {
-    messages.value = [
-      ...messages.value,
-      {
-        content: content,
-      },
-    ]
-
-    socket.emit('message', messages.value)
+  const sendMessage = (content: string, roomId: string) => {
+    socket.emit('message', {
+      content: content,
+      roomId: roomId,
+    })
   }
 
-  return { messages, sendMessage }
+  return { sendMessage }
 })
