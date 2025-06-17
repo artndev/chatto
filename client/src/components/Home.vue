@@ -80,6 +80,12 @@ import { reactive, ref } from 'vue';
 import { useSocketStore } from '../store.js';
 
 const { socket } = useSocketStore()
+
+type Messages = {
+    content: string
+    from: string
+    date?: string
+}[]
 let messages = ref([] as Messages)
 
 let usernameFormState = reactive({
