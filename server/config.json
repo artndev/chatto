@@ -1,4 +1,4 @@
 {
-  "CLIENT_URL": "http://localhost:5173",
+  "CLIENT_URL": "https://chatto-client.vercel.app",
   "PORT": 8000
 }
