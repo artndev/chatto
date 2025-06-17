@@ -5,7 +5,7 @@ export default <
     // messages: { [key: string]: { content: string; from: string }[] }
   }
 >{
-  rooms: [],
+  rooms: ['global', 'room_1'],
   usernames: {},
   // messages: {},
 }

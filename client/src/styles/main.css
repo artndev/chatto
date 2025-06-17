@@ -1,5 +1,10 @@
 @import 'tailwindcss';
 
+* {
+  margin-block: 0 !important;
+  margin: 0 !important;
+}
+
 .btn {
   display: flex !important;
   justify-content: center !important;

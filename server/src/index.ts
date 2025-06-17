@@ -21,6 +21,8 @@ io.on('connection', socket => {
   console.log('User is connected: ', socket.id)
 
   socket.on('user:join', username => {
+    console.log('User joined global')
+
     socket.username = username
     socket.room = 'global'
 
