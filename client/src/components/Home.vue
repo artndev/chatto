@@ -1,14 +1,13 @@
 <template>
-    <div class="flex flex-col gap-[20px] max-w-[min(100%,_500px)]">
-        <div v-if="!currentRoom" class="flex flex-col gap-[15px]">
+    <div class="flex flex-col gap-[20px] w-full">
+        <div v-if="!currentRoom" class="flex flex-col gap-[20px]">
             <h3>
-                Enter chatto!
+                Start chatting in chatto! 🍕
             </h3>
             <a-form class="flex flex-col gap-[10px]" :model="usernameFormState" @finish="usernameForm.onFinish">
                 <a-form-item name="username" :rules="usernameForm.rules.username">
                     <a-input v-model:value="usernameFormState.username" placeholder="Enter your username..." />
                 </a-form-item>
-
                 <a-button class="btn" html-type="submit">
                     <template #icon>
                         <DoorOpen />
@@ -27,12 +26,10 @@
                     </button>
                 </div>
             </div>
-            <div class="flex gap-[10px]">
-                <div v-for="username in usernames">
-                    {{ username }}
-                </div>
+            <div class="flex gap-[10px] break-all">
+                Online: {{usernames.map((username) => `@${username}`).join(", ")}}
             </div>
-            <div class="flex flex-col gap-[10px]">
+            <div class="flex flex-col gap-[10px] break-all">
                 <div v-for="message in messages">
                     <div class="flex-1">
                         <div v-if="message.from === usernameFormState.username" class="text-[#4096ff]">
@@ -47,7 +44,7 @@
                         </div>
                         <div v-else-if='message.from === "SERVER"' class="text-center">
                             <strong>
-                                {{ message.from }}: {{ message.content }}
+                                {{ message.from }}: {{ message.content }} 🚀
                             </strong>
                         </div>
                         <div v-else>
@@ -67,7 +64,6 @@
                 <a-form-item class="flex-1" name="message" :rules="messageForm.rules.message">
                     <a-input v-model:value="messageFormState.message" placeholder="Enter your message..." />
                 </a-form-item>
-
                 <a-button class="btn" html-type="submit">
                     <template #icon>
                         <Send />
