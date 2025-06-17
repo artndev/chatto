@@ -22,7 +22,7 @@
                     <span v-if="room === currentRoom" class="text-[#4096ff]">
                         {{ room }}
                     </span>
-                    <button v-else v-on:click='() => socket.emit("room:switch", room)'>
+                    <button v-else v-on:click='() => onRoomSwitch(room)'>
                         {{ room }}
                     </button>
                 </div>
@@ -30,6 +30,37 @@
             <div class="flex gap-[10px]">
                 <div v-for="username in usernames">
                     {{ username }}
+                </div>
+            </div>
+            <div class="flex flex-col gap-[10px]">
+                <div v-for="message in messages">
+                    <div class="flex-1">
+                        <div v-if="message.from === usernameFormState.username" class="text-[#4096ff]">
+                            <div class="flex flex-col text-right">
+                                <span>
+                                    {{ message.content }}
+                                </span>
+                                <span class="text-sm">
+                                    {{ message.date }}
+                                </span>
+                            </div>
+                        </div>
+                        <div v-else-if='message.from === "SERVER"'>
+                            <strong>
+                                {{ message.from }}: {{ message.content }}
+                            </strong>
+                        </div>
+                        <div v-else>
+                            <div class="flex flex-col">
+                                <span>
+                                    {{ message.from }}: {{ message.content }}
+                                </span>
+                                <span class="text-sm">
+                                    {{ message.date }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <a-form class="flex gap-[10px]" :model="messageFormState" @finish="messageForm.onFinish">
@@ -51,6 +82,9 @@
 import { DoorOpen, Send } from 'lucide-vue-next';
 import { reactive, ref } from 'vue';
 import { useSocketStore } from '../store.js';
+
+const { socket } = useSocketStore()
+let messages = ref([] as { content: string; from: string; date?: string }[])
 
 let usernameFormState = reactive({
     username: ""
@@ -80,11 +114,16 @@ const messageForm = {
         }]
     },
     onFinish: () => {
+        socket.emit("user:message", messageFormState.message)
 
+        messages.value.push({
+            content: messageFormState.message,
+            from: usernameFormState.username,
+            date: new Date().toLocaleTimeString("en-US")
+        })
+        messageFormState.message = ""
     }
 }
-
-const { socket } = useSocketStore()
 
 let rooms = ref([] as string[])
 let currentRoom = ref(null as string | null)
@@ -97,5 +136,25 @@ let usernames = ref([] as string[])
 socket.on("room:update_usernames", (_usernames) => {
     usernames.value = Object.keys(_usernames)
 })
+
+socket.on("message:receive", (username, data) => {
+    messages.value.push({
+        content: data,
+        from: username,
+        date: new Date().toLocaleTimeString("en-US")
+    })
+})
+
+socket.on("user:announce", (username, data) => {
+    messages.value.push({
+        content: data,
+        from: username
+    })
+})
+
+const onRoomSwitch = (room: string) => {
+    socket.emit("room:switch", room)
+    messages.value = []
+}
 
 </script>

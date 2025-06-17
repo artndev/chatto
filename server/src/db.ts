@@ -1,11 +1,4 @@
-export default <
-  {
-    rooms: string[]
-    usernames: { [key: string]: string }
-    // messages: { [key: string]: { content: string; from: string }[] }
-  }
->{
-  rooms: ['global', 'room_1'],
+export default <dbScheme>{
+  rooms: ['global', 'room_1', 'room_2', 'room_3'],
   usernames: {},
-  // messages: {},
 }
