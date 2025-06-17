@@ -1,9 +1,7 @@
 declare global {
-  export interface Dictionary<type> {
-    [key: string]: type
-  }
+  export type Dictionary<type> = { [key: string]: type }
 
-  export interface dbScheme {
+  export interface IdbScheme {
     rooms: string[]
     usernames: Dictionary<string>
   }

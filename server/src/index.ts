@@ -38,10 +38,10 @@ io.on('connection', socket => {
     socket.emit('room:update_rooms', db.rooms, 'global')
   })
 
-  socket.on('user:message', data => {
+  socket.on('user:message', content => {
     socket.broadcast
       .to(socket.room!)
-      .emit('message:receive', socket.username, data)
+      .emit('message:receive', socket.username, content)
   })
 
   socket.on('room:switch', room => {

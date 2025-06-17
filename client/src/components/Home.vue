@@ -45,7 +45,7 @@
                                 </span>
                             </div>
                         </div>
-                        <div v-else-if='message.from === "SERVER"'>
+                        <div v-else-if='message.from === "SERVER"' class="text-center">
                             <strong>
                                 {{ message.from }}: {{ message.content }}
                             </strong>
@@ -53,7 +53,7 @@
                         <div v-else>
                             <div class="flex flex-col">
                                 <span>
-                                    {{ message.from }}: {{ message.content }}
+                                    @{{ message.from }}: {{ message.content }}
                                 </span>
                                 <span class="text-sm">
                                     {{ message.date }}
@@ -84,7 +84,7 @@ import { reactive, ref } from 'vue';
 import { useSocketStore } from '../store.js';
 
 const { socket } = useSocketStore()
-let messages = ref([] as { content: string; from: string; date?: string }[])
+let messages = ref([] as Messages)
 
 let usernameFormState = reactive({
     username: ""
@@ -137,17 +137,17 @@ socket.on("room:update_usernames", (_usernames) => {
     usernames.value = Object.keys(_usernames)
 })
 
-socket.on("message:receive", (username, data) => {
+socket.on("message:receive", (username, _content) => {
     messages.value.push({
-        content: data,
+        content: _content,
         from: username,
         date: new Date().toLocaleTimeString("en-US")
     })
 })
 
-socket.on("user:announce", (username, data) => {
+socket.on("user:announce", (username, _content) => {
     messages.value.push({
-        content: data,
+        content: _content,
         from: username
     })
 })
